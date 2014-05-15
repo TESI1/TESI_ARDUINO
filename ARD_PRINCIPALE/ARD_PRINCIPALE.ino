@@ -1,17 +1,10 @@
-/*
-  String to Integer conversion
+#include <ble_shield.h>
+#include <services.h>
+#include <SPI.h>
+#include <boards.h>
+#include <RBL_nRF8001.h>
+#include <services.h>
 
- Reads a serial input string until it sees a newline, then converts
- the string to a number if the characters are digits.
-
- The circuit:
- No external components needed.
-
- created 29 Nov 2010
- by Tom Igoe
-
- This example code is in the public domain.
- */
 long valoreInIngresso = 0;
 String inString = "";    // string to hold input
 byte stanza = 0;
@@ -19,7 +12,9 @@ byte sensore = 0;
 byte valore = 0;
 
 
-void setup() {
+void setup() 
+{
+  ble_begin();//init-start BLE
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {
@@ -44,6 +39,11 @@ void loop() {
       stanza = (valoreInIngresso & 0xFF0000) >>16;
       sensore = (valoreInIngresso & 0x00FF00) >>8;
       valore = (valoreInIngresso & 0x0000FF);
+      
+      ble_write(stanza);
+      ble_write(sensore);
+      ble_write(valore);
+      
       /*
        Serial.print("stanza:");
       Serial.println(stanza, HEX);
@@ -54,10 +54,11 @@ void loop() {
       Serial.print("valore:");
       Serial.println(valore);
       */
-      
       // clear the string for new input:
       inString = "";
     }
   }
+   //permetto alla scheda di inviare e ricevere dati     
+   ble_do_events();
 }
 
