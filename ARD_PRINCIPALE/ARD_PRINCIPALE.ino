@@ -10,6 +10,8 @@ String inString = "";    // string to hold input
 byte stanza = 0;
 byte sensore = 0;
 byte valore = 0;
+//byte checksum = 0;
+//byte checksumTrasm = 0;
 
 
 void setup() 
@@ -26,6 +28,7 @@ void loop() {
   // Read serial input:
   while (Serial.available() > 0) {
     int inChar = Serial.read();
+    
     if (isDigit(inChar)) {
       // convert the incoming byte to a char
       // and add it to the string:
@@ -36,14 +39,22 @@ void loop() {
     if (inChar == '\n') {
       valoreInIngresso = inString.toInt();
      
-      stanza = (valoreInIngresso & 0xFF0000) >>16;
-      sensore = (valoreInIngresso & 0x00FF00) >>8;
-      valore = (valoreInIngresso & 0x0000FF);
+      //checksumTrasm = (valoreInIngresso & 0xFF000000) >>24;
+      stanza = (valoreInIngresso & 0x00FF0000) >>16;
+      sensore = (valoreInIngresso & 0x0000FF00) >>8;
+      valore = (valoreInIngresso & 0x000000FF);
       
-      ble_write(stanza);
-      ble_write(sensore);
-      ble_write(valore);
+      //checksum = (~ (stanza + sensore + valore)) & 0xff; 
       
+      //if (checksumTrasm == checksum)
+      //if (true)
+      
+        ble_write(stanza);
+        ble_write(sensore);
+        ble_write(valore);
+     
+      //}
+     
       /*
        Serial.print("stanza:");
       Serial.println(stanza, HEX);
@@ -55,10 +66,10 @@ void loop() {
       Serial.println(valore);
       */
       // clear the string for new input:
-      inString = "";
+      inString = "";   
     }
+     
   }
-   //permetto alla scheda di inviare e ricevere dati     
-   ble_do_events();
+  ble_do_events();//permetto alla scheda di inviare e ricevere dati     
 }
 
