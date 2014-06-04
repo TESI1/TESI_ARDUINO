@@ -1,3 +1,4 @@
+#include <LiquidCrystal.h>
 #include <ble_shield.h>
 #include <services.h>
 #include <SPI.h>
@@ -5,17 +6,19 @@
 #include <RBL_nRF8001.h>
 #include <services.h>
 
+
+
 long valoreInIngresso = 0;
 String inString = "";    // string to hold input
-byte stanza = 0;
-byte sensore = 0;
-byte valore = 0;
-//byte checksum = 0;
-//byte checksumTrasm = 0;
-
+int stanza = 0;
+int sensore = 0;
+int valore = 0;
+LiquidCrystal lcd(20, 21, 7, 6, 5, 4);
 
 void setup() 
 {
+  lcd.begin(16, 2);
+  lcd.print("ON: ");
   ble_begin();//init-start BLE
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
@@ -25,10 +28,14 @@ void setup()
 }
 
 void loop() {
+  lcd.setCursor(4, 0);
+  lcd.print(millis() / 1000);
+  
   // Read serial input:
   while (Serial.available() > 0) {
     int inChar = Serial.read();
-    
+     
+      
     if (isDigit(inChar)) {
       // convert the incoming byte to a char
       // and add it to the string:
@@ -39,37 +46,37 @@ void loop() {
     if (inChar == '\n') {
       valoreInIngresso = inString.toInt();
      
-      //checksumTrasm = (valoreInIngresso & 0xFF000000) >>24;
-      stanza = (valoreInIngresso & 0x00FF0000) >>16;
-      sensore = (valoreInIngresso & 0x0000FF00) >>8;
-      valore = (valoreInIngresso & 0x000000FF);
+      stanza  = (valoreInIngresso & 0xFF000000) >>24;
+      sensore = (valoreInIngresso & 0x00FF0000) >>16;
+      valore  = (valoreInIngresso & 0x0000FFFF);
       
-      //checksum = (~ (stanza + sensore + valore)) & 0xff; 
-      
-      //if (checksumTrasm == checksum)
-      //if (true)
-      
-        ble_write(stanza);
-        ble_write(sensore);
-        ble_write(valore);
-     
-      //}
-     
-      /*
-       Serial.print("stanza:");
-      Serial.println(stanza, HEX);
+      lcd.setCursor(0,1);
+      lcd.print("                ");
+      lcd.setCursor(0,1);
+      lcd.print(valoreInIngresso, HEX);
 
-      Serial.print("SEnsore:");
-      Serial.println(sensore,HEX);
-
-      Serial.print("valore:");
-      Serial.println(valore);
-      */
-      // clear the string for new input:
-      inString = "";   
-    }
+      switch (sensore) {
+        case 0x0A:
+          break;
+        case 0x0B:
+          break;
+        case 0x0C:
+          break;
+        default:
+          stanza = -1;
+          sensore = -1;
+          valore = -1;
+          break;
+      }
+          
+      ble_write(stanza);
+      ble_write(sensore);
+      ble_write(valore);
      
-  }
-  ble_do_events();//permetto alla scheda di inviare e ricevere dati     
+      inString = "";
+      
+      ble_do_events();//permetto alla scheda di inviare e ricevere dati
+    }     
+  }     
 }
 
